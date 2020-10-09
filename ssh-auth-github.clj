@@ -29,11 +29,11 @@
       (let [resp (curl/post "https://api.github.com/graphql"
                             {:body    (json/generate-string {"query" (query (:organization config)
                                                                             (:team config))})
-                             :throw false
+                             :throw   false
                              :headers {"Authorization" (format "bearer %s" (:token config))}})
             body (-> resp
-                (:body)
-                (json/parse-string true))]
+                     (:body)
+                     (json/parse-string true))]
 
            (cond
              (not= 200 (:status resp))
@@ -55,8 +55,7 @@
                 (System/exit 1))
       (->> (get-in data [:data :organization :team :members :nodes])
            (mapcat (fn [n] (map #(str (:key %) " " (:login n))
-                                (get-in n [:publicKeys :nodes])))))
-      )
+                                (get-in n [:publicKeys :nodes]))))))
 
 (doseq [l (->> (read-config)
                (retrieve-keys)
