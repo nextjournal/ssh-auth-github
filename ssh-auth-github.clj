@@ -22,7 +22,7 @@
           ["-t" "--token TOKEN" "Github token"]
           ["-o" "--organization ORGANIZATION" "Github organization"]
           ["-e" "--team TEAM" "Github team"]
-          ["-c" "--config PATH" "Path to configuration file"]])]
+          ["-c" "--config PATH" "Path to configuration file" :default "config.edn"]])]
 
     (when (:help options)
       (print-usage summary)
@@ -34,14 +34,9 @@
       (System/exit 1))
 
     (cond-> {}
-      (and (:config options)
-           (fs/exists? (:config options)))
+      (fs/exists? (:config options))
       (merge
        (read-string (slurp (:config options))))
-
-      (fs/exists? "config.edn")
-      (merge
-       (read-string (slurp "config.edn")))
 
       true (merge (dissoc options :config)))))
 
