@@ -2,9 +2,48 @@
 
 (require '[babashka.curl :as curl])
 (require '[cheshire.core :as json])
+(require '[clojure.tools.cli :as tools.cli])
+(require '[clojure.string :as str])
+(require '[babashka.fs :as fs])
+
+(defn print-usage [summary]
+  (println
+   (->> ["Usage: " "ssh-auth-github.clj [options]"
+        ""
+        "Options:"
+        summary]
+        (str/join \newline))))
 
 (defn read-config []
-      (read-string (slurp "config.edn")))
+  (let [{:keys [options _arguments errors summary] :as _cli-options}
+        (tools.cli/parse-opts
+         *command-line-args*
+         [["-h" "--help"]
+          ["-t" "--token TOKEN" "Github token"]
+          ["-o" "--organization ORGANIZATION" "Github organization"]
+          ["-e" "--team TEAM" "Github team"]
+          ["-c" "--config PATH" "Path to configuration file"]])]
+
+    (when (:help options)
+      (print-usage summary)
+      (System/exit 1))
+
+    (when errors
+      (println errors)
+      (print-usage summary)
+      (System/exit 1))
+
+    (cond-> {}
+      (and (:config options)
+           (fs/exists? (:config options)))
+      (merge
+       (read-string (slurp (:config options))))
+
+      (fs/exists? "config.edn")
+      (merge
+       (read-string (slurp "config.edn")))
+
+      true (merge (dissoc options :config)))))
 
 (defn query [organization team]
       (format "{organization(login: \"%s\") {
