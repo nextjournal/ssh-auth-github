@@ -1,4 +1,4 @@
-FROM borkdude/babashka:0.2.2
+FROM babashka/babashka:0.8.2
 
 COPY ssh-auth-github.clj /ssh-auth-github.clj
 
